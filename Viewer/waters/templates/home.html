@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Waters Viewer</title>
+</head>
+<body>
+<form id="home" method="post">
+    {% csrf_token %}
+    {{ vals|json_script:"get-data" }}
+
+    <div>
+        {% for i in runs %}
+            <a href={{ i.link }}>
+                <div class="item item-3">{{ i.name }}</div>
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="bottom">
+        <div></div>
+        <button form="home" type="submit" formaction="http://127.0.0.1:8000/new_run">
+            New Run
+        </button>
+    </div>
+</form>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add New Run</title>
+</head>
+<body>
+
+<form class="box" id="new_run" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div style="margin-top: 5px">
+        <p>{{ title }}</p>
+    </div>
+
+    <div style="margin-top: 35px">
+        <input type="file" name="xml"/>
+    </div>
+
+    <div>
+        <label for="run_name">Run Name:</label>
+        <input type="text" id="run_name" name="Name">
+    </div>
+
+    <button type="submit" form="new_run" formaction={{ post }}>Ok</button>
+
+</form>
+</body>
+</html>
