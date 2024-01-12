@@ -17,7 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from waters.views import home, new_run, post_run, show, refresh, add_checkbox, add_istd_box, save_istd, save_check
+from waters.views import home, new_run, post_run, show, refresh, \
+    add_checkbox, add_istd_box, save_istd, save_check, \
+    export_method, import_method
 
 urlpatterns = [
     path('', home),
@@ -30,4 +32,6 @@ urlpatterns = [
     path('istd_box', add_istd_box),
     path('save_istd', save_istd),
     path('save_check', save_check),
+    path('export_method/<int:run_id>', export_method),
+    path('import_method/<int:run_id>', import_method),
 ]

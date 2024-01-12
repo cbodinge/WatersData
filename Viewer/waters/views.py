@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
 
 from .models import runs, drug_methods, istd_methods, samples, drugs
-from .importer import read
+from .importer import read, import_method as im_method
 from .analysis.run2 import main
 from django.db.models import Q
+
+from .exporter.export_method import main as ex_method
 
 # Create your views here.
 
@@ -58,6 +60,14 @@ def refresh(request: HttpRequest):
     if data['drugs'] == '':
         return HttpResponse('')
     drug = drug_methods.objects.get(id=data['drugs'])
+
+    cals = drugs.objects \
+        .filter(method=drug, sample__sample_type='CAL', include=True) \
+        .values_list('exp_conc', flat=True)
+
+    drug.min = min(cals)
+    drug.max = max(cals)
+    drug.save()
 
     return HttpResponse(main(drug))
 
@@ -138,3 +148,17 @@ def save_check(request: HttpRequest):
     drug.save()
 
     return HttpResponse('')
+
+
+# Data I/O ############################################################################################################
+
+def export_method(request: HttpRequest, run_id: int):
+    ex_method(run_id)
+
+    return redirect(f'{url}')
+
+
+def import_method(request: HttpRequest, run_id: int):
+    im_method(run_id)
+
+    return redirect(f'{url}show/{run_id}')

@@ -56,6 +56,18 @@
                 hx-trigger="click, keyup[key=='F2'] from:body">
             Update (F2)
         </button>
+
+        <button id="get-method"
+                hx-swap="none"
+                hx-post="\export_method\{{ run.id }}">
+            Export Method
+        </button>
+
+        <button id="set-method"
+                hx-swap="none"
+                hx-post="/import_method/{{ run.id }}">
+            Import Method
+        </button>
     </div>
 </form>
 </body>
