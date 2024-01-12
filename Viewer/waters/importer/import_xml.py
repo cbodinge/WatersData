@@ -2,6 +2,7 @@ from xml.etree import ElementTree as ET
 from xml.etree.ElementTree import Element
 from ..models import samples, drugs, runs, istds, istd_methods, drug_methods
 from datetime import datetime
+from django.db import connection
 
 
 def to_float(val):
@@ -29,9 +30,11 @@ def get_samples(root: Element, run_name: str):
     _drugs = get_drugs(run, root)
     _istds = get_istds(run, root)
 
-    smpls = [init_samples(i, run, _drugs, _istds) for i in {i for i in root.findall("./SAMPLE")}]
-    smpls = [i for i in smpls if i is not None]
-    smpls.sort(key=lambda x: x.inj_time)
+    smpls = list({i for i in root.findall("./SAMPLE")})
+    smpls.sort(key=lambda x: x.attrib['name'])
+    _ = [init_samples(i, run, _drugs, _istds) for i in smpls]
+
+    init_ranges(run.id)
 
 
 def get_drugs(run: runs, root: Element):
@@ -71,17 +74,19 @@ def init_samples(smpl: Element, run: runs, drug, istd):
     t = smpl.attrib['createtime']
     pattern = '%d-%b-%y %H:%M:%S'
 
-    try:
-        sample = samples(sample_name=smpl.attrib['name'],
-                         sample_type=smpl.attrib['type'],
-                         inj_time=datetime.strptime(f'{d} {t}', pattern),
-                         run=run)
-        sample.save()
-        _ = {i: init_drugs(smpl.findall(f"./COMPOUND/[@name='{i}']")[0], sample, j) for i, j in drug.items()}
-        _ = {i: init_istds(smpl.findall(f"./COMPOUND/[@name='{i}']")[0], sample, j) for i, j in istd.items()}
+    # try:
+    stype = {'Standard': 'CAL', 'QC': 'QC'}
 
-    except:
-        return None
+    sample = samples(sample_name=smpl.attrib['name'],
+                     sample_type=stype.get(smpl.attrib['type'], 'O'),
+                     inj_time=datetime.strptime(f'{d} {t}', pattern),
+                     run=run)
+    sample.save()
+    _ = {i: init_drugs(smpl.findall(f"./COMPOUND/[@name='{i}']")[0], sample, j) for i, j in drug.items()}
+    _ = {i: init_istds(smpl.findall(f"./COMPOUND/[@name='{i}']")[0], sample, j) for i, j in istd.items()}
+
+    # except:
+    #     return None
 
 
 def init_drugs(analyte: Element, sample: samples, method: drug_methods):
@@ -109,3 +114,15 @@ def init_istds(analyte: Element, sample: samples, method: drug_methods):
         istd.area = to_float(peak.attrib['area'])
 
     istd.save()
+
+
+def init_ranges(run_id: int):
+    cur = connection.cursor()
+
+    cur.execute("""WITH cals AS (SELECT id FROM waters_samples AS ws WHERE sample_type='CAL')
+                    UPDATE waters_drug_methods SET
+                        min = (SELECT min(wd.exp_conc) FROM waters_drugs AS wd                        
+                            WHERE wd.method_id=waters_drug_methods.id and wd.sample_id IN cals and wd.include=TRUE),
+                        max = (SELECT max(wd.exp_conc) FROM waters_drugs AS wd 
+                            WHERE wd.method_id=waters_drug_methods.id and wd.sample_id IN cals and wd.include=TRUE)
+                    WHERE run_id=%s;""", (run_id,))

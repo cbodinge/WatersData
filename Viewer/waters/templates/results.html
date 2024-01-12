@@ -1,0 +1,62 @@
+{% load django_htmx %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Results</title>
+    {% load static %}
+    <script src="{% static 'htmx.min.js' %}" defer></script>
+</head>
+<body>
+<script>
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+    })
+</script>
+{% django_htmx_script %}
+
+<form id="result_form">
+    <div>
+        <label for="drugs">Choose a Drug:</label>
+        <select name="drugs" id="drugs" class="refresh">
+            <option selected="selected"></option>
+            {% for drug in drugs %}
+                <option value={{ drug.id }}>{{ drug.drug_name }}</option>
+            {% endfor %}
+        </select>
+
+        <div id="istd_box" class="refresh istd"></div>
+
+        <div id="checkboxes" class="refresh cb"></div>
+
+        <div id="results"></div>
+
+        <div id="htmx-istd"
+             hx-target="#istd_box"
+             hx-post="/istd_box"
+             hx-swap="innerHTML"
+             hx-include="#drugs"
+             hx-trigger="change from:#drugs">
+        </div>
+
+        <div id="htmx-checkbox"
+             hx-target="#checkboxes"
+             hx-post="/checkboxes"
+             hx-swap="innerHTML"
+             hx-include="#drugs"
+             hx-trigger="change from:#drugs">
+            <p>testing this out</p>
+        </div>
+
+        <button id="htmx-results"
+                hx-target="#results"
+                hx-post="/refresh"
+                hx-swap="innerHTML"
+                hx-include="#drugs"
+                hx-trigger="click, keyup[key=='F2'] from:body">
+            Update (F2)
+        </button>
+    </div>
+</form>
+</body>
+</html>

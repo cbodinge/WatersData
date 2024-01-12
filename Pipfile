@@ -9,6 +9,7 @@ psvg = "*"
 pygraphing = "*"
 fonttools = "*"
 django = "*"
+django-htmx = "*"
 
 [dev-packages]
 

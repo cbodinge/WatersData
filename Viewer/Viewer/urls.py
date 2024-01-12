@@ -17,11 +17,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from waters.views import home, new_run, post_run
+from waters.views import home, new_run, post_run, show, refresh, add_checkbox, add_istd_box, save_istd, save_check
 
 urlpatterns = [
     path('', home),
     path('new_run', new_run),
     path('post_run', post_run),
     path('admin/', admin.site.urls),
+    path('show/<int:run_id>', show),
+    path('refresh', refresh),
+    path('checkboxes', add_checkbox),
+    path('istd_box', add_istd_box),
+    path('save_istd', save_istd),
+    path('save_check', save_check),
 ]

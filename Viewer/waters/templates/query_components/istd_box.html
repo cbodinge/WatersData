@@ -1,0 +1,7 @@
+<label for="istds">Choose an Internal Standard:</label>
+<option selected="selected">{{ selected_istd }}</option>
+<select name="istds" id="istds" class="refresh">
+    {% for istd in istds %}
+        <option value={{ istd.id }}>{{ istd.istd_name }}</option>
+    {% endfor %}
+</select>

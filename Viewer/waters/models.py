@@ -13,7 +13,9 @@ class samples(models.Model):
     class SampleTypes(TextChoices):
         CALIBRATION = 'CAL', 'Standard'
         QUALITY_CONTROL = 'QC', 'Quality Control'
+        OTHER = 'O', 'OTHER'
 
+    run = models.ForeignKey(runs, on_delete=models.CASCADE)
     sample_name = models.CharField(max_length=255, null=False)
     sample_type = models.CharField(max_length=4, choices=SampleTypes.choices,
                                    default=SampleTypes.QUALITY_CONTROL, null=False)
@@ -47,6 +49,8 @@ class drugs(models.Model):
     exp_conc = models.FloatField(null=True)
     area = models.FloatField(null=True)
     area2 = models.FloatField(null=True)
+
+    include = models.BooleanField(default=True)
 
 
 class istds(models.Model):
